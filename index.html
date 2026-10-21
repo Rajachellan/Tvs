@@ -1071,126 +1071,6 @@
             });
         }
     
-        /* Floor plan mobile toggle — GSAP click & reveal */
-        (function initFloorPlanToggle() {
-            const toggle = document.querySelector(".floor-plan-toggle");
-            const pill = document.querySelector(".floor-plan-toggle-pill");
-            const buttons = document.querySelectorAll(".floor-plan-toggle-btn");
-            const cards = document.querySelectorAll(".floor-plan-card[data-plan]");
-            if (!toggle || !pill || !buttons.length || !cards.length) return;
-
-            let activePlan = "2bhk";
-            let animating = false;
-            const isDesktop = () => window.matchMedia("(min-width: 1024px)").matches;
-
-            const movePill = (plan, immediate) => {
-                const index = plan === "3bhk" ? 1 : 0;
-                const xPercent = index * 100;
-                if (typeof gsap === "undefined") {
-                    pill.style.transform = `translateX(${xPercent}%)`;
-                    return;
-                }
-                if (immediate) {
-                    gsap.set(pill, { xPercent });
-                } else {
-                    gsap.to(pill, {
-                        xPercent,
-                        duration: 0.4,
-                        ease: "power3.inOut"
-                    });
-                }
-            };
-
-            const setButtonState = (plan) => {
-                buttons.forEach((btn) => {
-                    const on = btn.dataset.plan === plan;
-                    btn.classList.toggle("is-active", on);
-                    btn.setAttribute("aria-selected", on ? "true" : "false");
-                });
-            };
-
-            const revealCard = (plan) => {
-                if (plan === activePlan || animating) return;
-                if (isDesktop()) {
-                    activePlan = plan;
-                    setButtonState(plan);
-                    movePill(plan, false);
-                    return;
-                }
-
-                const next = document.querySelector(`.floor-plan-card[data-plan="${plan}"]`);
-                const current = document.querySelector(`.floor-plan-card[data-plan="${activePlan}"]`);
-                if (!next || !current) return;
-
-                animating = true;
-                activePlan = plan;
-                setButtonState(plan);
-                movePill(plan, false);
-
-                const finish = () => {
-                    cards.forEach((card) => {
-                        const on = card.dataset.plan === plan;
-                        card.classList.toggle("is-active", on);
-                        if (typeof gsap !== "undefined") {
-                            gsap.set(card, { clearProps: "opacity,transform,display" });
-                        }
-                    });
-                    animating = false;
-                    if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh();
-                };
-
-                if (typeof gsap === "undefined") {
-                    finish();
-                    return;
-                }
-
-                const tl = gsap.timeline({ onComplete: finish });
-                tl.to(current, {
-                    opacity: 0,
-                    y: 18,
-                    duration: 0.28,
-                    ease: "power2.in"
-                })
-                .add(() => {
-                    current.classList.remove("is-active");
-                    next.classList.add("is-active");
-                    gsap.set(next, { opacity: 0, y: 28 });
-                })
-                .to(next, {
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.45,
-                    ease: "power3.out"
-                });
-            };
-
-            buttons.forEach((btn) => {
-                btn.addEventListener("click", () => revealCard(btn.dataset.plan));
-            });
-
-            // Keep desktop layout showing both cards; reset mobile active state on resize
-            const syncLayout = () => {
-                if (isDesktop()) {
-                    cards.forEach((card) => {
-                        card.classList.add("is-active");
-                        if (typeof gsap !== "undefined") {
-                            gsap.set(card, { clearProps: "opacity,transform,display" });
-                        }
-                    });
-                } else {
-                    cards.forEach((card) => {
-                        card.classList.toggle("is-active", card.dataset.plan === activePlan);
-                    });
-                    movePill(activePlan, true);
-                    setButtonState(activePlan);
-                }
-            };
-
-            movePill(activePlan, true);
-            syncLayout();
-            window.addEventListener("resize", syncLayout);
-        })();
-
         /* Custom Select Dropdowns */
         function syncCustomSelect(field) {
             const select = field.querySelector("select");
@@ -1924,7 +1804,7 @@
 
                         <div class="hero-location flex items-center gap-2 text-brandRed font-semibold tracking-[0.14em] uppercase text-[11px] sm:text-[13px] mb-4 sm:mb-5">
                             <i class="fa-solid fa-location-dot text-[13px] sm:text-base"></i>
-                            <span>200 FT Radial Road, Chennai</span>
+                            <span>Pallavaram, Chennai</span>
                         </div>
 
                         <p class="text-[11px] sm:text-[13px] font-semibold tracking-[0.12em] uppercase text-luxuryDark/65 md:text-luxuryGray mb-2 sm:mb-3">
@@ -2041,56 +1921,47 @@
 
                     <!-- Right Lead Form -->
                     <div class="hero-form flex justify-center lg:justify-end w-full">
-                        <div
-                            id="leadForm"
-                            class="w-full max-w-[420px] rounded-[22px] bg-white p-6 sm:p-8 shadow-2xl shadow-slate-900/20"
-                        >
-                            <div class="mb-5">
-                                <span class="lm-eyebrow">Priority Assistance</span>
-                                <h2 class="lm-title font-playfair">Book a site visit</h2>
-                                <p class="lm-subtitle">
-                                    Share your details to receive the latest price sheet, floor plans and availability.
-                                </p>
+                        <div id="leadForm" class="hero-lead-card w-full max-w-[400px] rounded-2xl bg-white p-6 sm:p-8 shadow-2xl shadow-slate-900/20">
+                            <div class="hero-lead-heading">
+                                <h2 class="font-playfair">Get Price &amp; Availability</h2>
+                                <span aria-hidden="true"></span>
+                                <p>Fill in your details and our property expert will contact you shortly.</p>
                             </div>
 
-                            <form class="lm-form relative" id="propertyLeadForm">
-                                <div class="lm-group">
-                                    <label for="hfName" class="lm-label">Full name</label>
-                                    <input id="hfName" class="lm-input" type="text" name="name" placeholder="Enter your name" required autocomplete="name">
+                            <form class="hero-lead-form" id="propertyLeadForm">
+                                <div class="form-field hero-form-field">
+                                    <label class="sr-only" for="hfName">Your name</label>
+                                    <i class="fa-regular fa-user" aria-hidden="true"></i>
+                                    <input id="hfName" type="text" name="name" placeholder="Your Name" required autocomplete="name">
                                 </div>
 
-                                <div class="lm-group">
-                                    <label for="hfPhone" class="lm-label">Mobile number</label>
-                                    <div class="lm-input lm-phone">
-                                        <span class="lm-phone-prefix" aria-hidden="true">
-                                            <span class="lm-flag"></span>
-                                            <i class="fa-solid fa-caret-down text-[10px] text-luxuryGray"></i>
-                                            <span class="lm-code">+91</span>
-                                        </span>
-                                        <input id="hfPhone" type="tel" name="phone" placeholder="Enter mobile number" required inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" autocomplete="tel-national">
-                                    </div>
+                                <div class="form-field hero-form-field">
+                                    <label class="sr-only" for="hfPhone">Mobile number</label>
+                                    <i class="fa-solid fa-phone" aria-hidden="true"></i>
+                                    <input id="hfPhone" type="tel" name="phone" placeholder="Mobile Number" required inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" autocomplete="tel-national">
                                 </div>
 
-                                <div class="lm-group">
-                                    <label for="hfEmail" class="lm-label">Email address</label>
-                                    <input id="hfEmail" class="lm-input" type="email" name="email" placeholder="you@example.com" autocomplete="email">
+                                <div class="form-field hero-form-field">
+                                    <label class="sr-only" for="hfUnit">Select unit type</label>
+                                    <i class="fa-solid fa-house" aria-hidden="true"></i>
+                                    <select id="hfUnit" name="unit" required>
+                                        <option value="">Select Unit Type</option>
+                                        <option value="2 BHK">2 BHK</option>
+                                        <option value="3 BHK">3 BHK</option>
+                                        <option value="4 BHK Duplex">4 BHK Duplex</option>
+                                    </select>
                                 </div>
 
-                                <label class="lm-consent" for="hfConsent">
+                                <label class="lm-consent hero-lead-consent" for="hfConsent">
                                     <input id="hfConsent" type="checkbox" name="consent" value="yes" required>
-                                    <span>
-                                        I agree to receive project information by phone, SMS, email or WhatsApp, including if my number is registered under DND. I have read the
-                                        <a href="#" class="lm-link">Privacy Policy</a>.
-                                    </span>
+                                    <span>I agree to be contacted about this enquiry.</span>
                                 </label>
 
-                                <button type="submit" id="heroLeadSubmit" class="lm-submit">
-                                    Request a Callback
-                                </button>
+                                <button type="submit" id="heroLeadSubmit" class="hero-lead-submit">Get Price &amp; Availability</button>
 
-                                <p class="lm-note">
-                                    <i class="fa-solid fa-lock text-[#C9A227] text-[11px]"></i>
-                                    Your details are used only for this enquiry.
+                                <p class="hero-lead-note">
+                                    <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                                    Your information is safe with us.
                                 </p>
                             </form>
                         </div>
@@ -2480,47 +2351,20 @@
                     <h2 class="mt-4 font-playfair text-[32px] sm:text-[40px] lg:text-[46px] xl:text-[52px] leading-[1.15] font-bold text-luxuryDark tracking-[-0.02em]">
                         Choose the <span class="text-brandRed">Right Home</span> for Your Family
                     </h2>
-                    <ul class="mt-6 grid gap-3 text-left text-[14px] sm:text-[15px] leading-[1.6] text-luxuryDark sm:grid-cols-2 lg:grid-cols-3">
+                    <!-- <ul class="mt-6 grid gap-3 text-left text-[14px] sm:text-[15px] leading-[1.6] text-luxuryDark sm:grid-cols-2 lg:grid-cols-3">
                         <li class="flex items-start gap-2.5"><span class="text-brandRed" aria-hidden="true">◆</span><span>2 BHK Classic ~970 Sq.Ft.</span></li>
                         <li class="flex items-start gap-2.5"><span class="text-brandRed" aria-hidden="true">◆</span><span>2 BHK Premium ~1,250 Sq.Ft.</span></li>
                         <li class="flex items-start gap-2.5"><span class="text-brandRed" aria-hidden="true">◆</span><span>3 BHK Classic ~1,550 Sq.Ft.</span></li>
                         <li class="flex items-start gap-2.5"><span class="text-brandRed" aria-hidden="true">◆</span><span>3 BHK Premium ~1,700 Sq.Ft.</span></li>
                         <li class="flex items-start gap-2.5 sm:col-span-2 lg:col-span-1"><span class="text-brandRed" aria-hidden="true">◆</span><span>4 BHK Duplex Penthouses ~2,500 Sq.Ft.</span></li>
-                    </ul>
-                </div>
-
-                <!-- Mobile plan toggle (click & reveal) -->
-                <div
-                    class="floor-plan-toggle lg:hidden mt-8 mx-auto"
-                    role="tablist"
-                    aria-label="Select apartment configuration"
-                >
-                    <span class="floor-plan-toggle-pill" aria-hidden="true"></span>
-                    <button
-                        type="button"
-                        class="floor-plan-toggle-btn is-active"
-                        role="tab"
-                        aria-selected="true"
-                        data-plan="2bhk"
-                    >
-                        2 BHK
-                    </button>
-                    <button
-                        type="button"
-                        class="floor-plan-toggle-btn"
-                        role="tab"
-                        aria-selected="false"
-                        data-plan="3bhk"
-                    >
-                        3 &amp; 4 BHK
-                    </button>
+                    </ul> -->
                 </div>
 
                 <!-- Configuration Cards -->
-                <div class="floor-plan-cards mt-8 lg:mt-14 flex flex-col lg:flex-row gap-6 lg:gap-8">
+                <div class="floor-plan-cards mt-8 lg:mt-14 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
 
                     <!-- 2 BHK Card -->
-                    <article class="floor-plan-card is-active rounded-2xl lg:rounded-[20px] bg-white shadow-xl shadow-slate-900/8 border border-luxuryBorder/50 overflow-hidden" data-plan="2bhk" role="tabpanel">
+                    <article class="floor-plan-card flex flex-col rounded-2xl lg:rounded-[20px] bg-white shadow-xl shadow-slate-900/8 border border-luxuryBorder/50 overflow-hidden">
                         <div class="flex flex-col p-6 sm:p-8 lg:p-9">
                             <span class="inline-flex self-start items-center rounded-md bg-brandRed/10 px-3 py-1.5 text-[13px] sm:text-[14px] font-bold text-brandRed tracking-wide">
                                 2 BHK
@@ -2582,24 +2426,24 @@
                         </div>
 
                         <!-- CTAs -->
-                        <div class="grid sm:grid-cols-2 gap-3 sm:gap-4 px-6 sm:px-8 lg:px-9 pb-6 sm:pb-8">
+                        <div class="mt-auto grid sm:grid-cols-2 gap-3 sm:gap-4 px-6 sm:px-8 lg:px-9 pb-6 sm:pb-8">
                             <a href="#" data-modal-title="Book a Site Visit" class="js-open-lead-modal inline-flex items-center justify-center rounded-lg bg-brandRed px-6 py-3.5 sm:py-4 text-white font-bold tracking-[0.08em] uppercase text-[12px] sm:text-[13px] hover:bg-brandRedDark transition shadow-md shadow-brandRed/20">Book Site Visit</a>
                             <a href="#" data-modal-title="Get Floor Plans" class="js-open-lead-modal inline-flex items-center justify-center rounded-lg border-[1.5px] border-brandRed bg-white px-6 py-3.5 sm:py-4 text-brandRed font-bold tracking-[0.08em] uppercase text-[12px] sm:text-[13px] hover:bg-brandRed hover:text-white transition">Get Floor Plans</a>
                         </div>
                     </article>
 
-                    <!-- 3 & 4 BHK Card -->
-                    <article class="floor-plan-card rounded-2xl lg:rounded-[20px] bg-white shadow-xl shadow-slate-900/8 border border-luxuryBorder/50 overflow-hidden" data-plan="3bhk" role="tabpanel">
+                    <!-- 3 BHK Card -->
+                    <article class="floor-plan-card flex flex-col rounded-2xl lg:rounded-[20px] bg-white shadow-xl shadow-slate-900/8 border border-luxuryBorder/50 overflow-hidden">
                         <div class="flex flex-col p-6 sm:p-8 lg:p-9">
                             <span class="inline-flex self-start items-center rounded-md bg-brandRed/10 px-3 py-1.5 text-[13px] sm:text-[14px] font-bold text-brandRed tracking-wide">
-                                3 BHK &amp; 4 BHK
+                                3 BHK
                             </span>
 
                             <h3 class="mt-4 font-playfair text-[26px] sm:text-[30px] lg:text-[32px] font-bold text-luxuryDark leading-[1.2]">
-                                Spacious Living to Duplex Penthouses
+                                Room to Grow and Live Well
                             </h3>
                             <p class="mt-2.5 text-[14px] sm:text-[15px] text-luxuryGray">
-                                3 BHK Classic · 3 BHK Premium · 4 BHK Duplex Penthouse
+                                3 BHK Classic · 3 BHK Premium
                             </p>
 
                             <div class="mt-5 border-t border-luxuryBorder/80"></div>
@@ -2607,10 +2451,10 @@
                             <div class="mt-5">
                                 <p class="text-[13px] sm:text-[14px] text-luxuryGray">Size range</p>
                                 <p class="mt-1 font-playfair text-[34px] sm:text-[40px] lg:text-[44px] font-bold text-brandRed leading-none tracking-tight">
-                                    1,550 – 2,500 <span class="text-[20px] sm:text-[22px]">Sq.Ft.</span>
+                                    1,550 – 1,700 <span class="text-[20px] sm:text-[22px]">Sq.Ft.</span>
                                 </p>
                                 <p class="mt-2 text-[13px] sm:text-[14px] text-luxuryGray">
-                                    3 BHK ~1,550 / ~1,700 Sq.Ft. · 4 BHK Duplex ~2,500 Sq.Ft.
+                                    Classic ~1,550 Sq.Ft. · Premium ~1,700 Sq.Ft.
                                 </p>
                             </div>
 
@@ -2643,13 +2487,61 @@
                                             <path d="M12 3.5 L20 12 L12 20.5 L4 12 Z"/>
                                         </svg>
                                     </span>
-                                    <span class="text-[14px] sm:text-[15px] text-luxuryDark/80">4 BHK Duplex Penthouses ~2,500 Sq.Ft.</span>
+                                    <span class="text-[14px] sm:text-[15px] text-luxuryDark/80">No common wall sharing</span>
                                 </li>
                             </ul>
                         </div>
 
                         <!-- CTAs -->
-                        <div class="grid sm:grid-cols-2 gap-3 sm:gap-4 px-6 sm:px-8 lg:px-9 pb-6 sm:pb-8">
+                        <div class="mt-auto grid sm:grid-cols-2 gap-3 sm:gap-4 px-6 sm:px-8 lg:px-9 pb-6 sm:pb-8">
+                            <a href="#" data-modal-title="Book a Site Visit" class="js-open-lead-modal inline-flex items-center justify-center rounded-lg bg-brandRed px-6 py-3.5 sm:py-4 text-white font-bold tracking-[0.08em] uppercase text-[12px] sm:text-[13px] hover:bg-brandRedDark transition shadow-md shadow-brandRed/20">Book Site Visit</a>
+                            <a href="#" data-modal-title="Get Cost Sheet" class="js-open-lead-modal inline-flex items-center justify-center rounded-lg border-[1.5px] border-brandRed bg-white px-6 py-3.5 sm:py-4 text-brandRed font-bold tracking-[0.08em] uppercase text-[12px] sm:text-[13px] hover:bg-brandRed hover:text-white transition">Get Cost Sheet</a>
+                        </div>
+                    </article>
+
+                    <!-- 4 BHK Card -->
+                    <article class="floor-plan-card flex flex-col rounded-2xl lg:rounded-[20px] bg-white shadow-xl shadow-slate-900/8 border border-luxuryBorder/50 overflow-hidden">
+                        <div class="flex flex-col p-6 sm:p-8 lg:p-9">
+                            <span class="inline-flex self-start items-center rounded-md bg-brandRed/10 px-3 py-1.5 text-[13px] sm:text-[14px] font-bold text-brandRed tracking-wide">
+                                4 BHK Duplex
+                            </span>
+
+                            <h3 class="mt-4 font-playfair text-[26px] sm:text-[30px] lg:text-[32px] font-bold text-luxuryDark leading-[1.2]">
+                                Elevated Space in a Duplex Home
+                            </h3>
+                            <p class="mt-2.5 text-[14px] sm:text-[15px] text-luxuryGray">
+                                4 BHK Duplex Penthouse
+                            </p>
+
+                            <div class="mt-5 border-t border-luxuryBorder/80"></div>
+
+                            <div class="mt-5">
+                                <p class="text-[13px] sm:text-[14px] text-luxuryGray">Approximate size</p>
+                                <p class="mt-1 font-playfair text-[34px] sm:text-[40px] lg:text-[44px] font-bold text-brandRed leading-none tracking-tight">
+                                    2,500 <span class="text-[20px] sm:text-[22px]">Sq.Ft.</span>
+                                </p>
+                                <p class="mt-2 text-[13px] sm:text-[14px] text-luxuryGray">
+                                    Duplex penthouse configuration
+                                </p>
+                            </div>
+
+                            <ul class="mt-7 space-y-4">
+                                <li class="flex items-center gap-3.5">
+                                    <span class="w-10 h-10 rounded-full bg-brandRed/10 text-brandRed flex items-center justify-center flex-shrink-0" aria-hidden="true"><i class="fa-solid fa-house"></i></span>
+                                    <span class="text-[14px] sm:text-[15px] text-luxuryDark/80">Two-level duplex living</span>
+                                </li>
+                                <li class="flex items-center gap-3.5">
+                                    <span class="w-10 h-10 rounded-full bg-brandRed/10 text-brandRed flex items-center justify-center flex-shrink-0" aria-hidden="true"><i class="fa-solid fa-people-roof"></i></span>
+                                    <span class="text-[14px] sm:text-[15px] text-luxuryDark/80">Generous space for family and guests</span>
+                                </li>
+                                <li class="flex items-center gap-3.5">
+                                    <span class="w-10 h-10 rounded-full bg-brandRed/10 text-brandRed flex items-center justify-center flex-shrink-0" aria-hidden="true"><i class="fa-solid fa-compass"></i></span>
+                                    <span class="text-[14px] sm:text-[15px] text-luxuryDark/80">Thoughtfully planned Vastu-compliant home</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-auto grid sm:grid-cols-2 gap-3 sm:gap-4 px-6 sm:px-8 lg:px-9 pb-6 sm:pb-8">
                             <a href="#" data-modal-title="Book a Site Visit" class="js-open-lead-modal inline-flex items-center justify-center rounded-lg bg-brandRed px-6 py-3.5 sm:py-4 text-white font-bold tracking-[0.08em] uppercase text-[12px] sm:text-[13px] hover:bg-brandRedDark transition shadow-md shadow-brandRed/20">Book Site Visit</a>
                             <a href="#" data-modal-title="Get Cost Sheet" class="js-open-lead-modal inline-flex items-center justify-center rounded-lg border-[1.5px] border-brandRed bg-white px-6 py-3.5 sm:py-4 text-brandRed font-bold tracking-[0.08em] uppercase text-[12px] sm:text-[13px] hover:bg-brandRed hover:text-white transition">Get Cost Sheet</a>
                         </div>
@@ -3354,10 +3246,10 @@
         <!-- =========================
         SECTION 6 / BUYER CONFIDENCE
         ========================= -->
-        <section id="confidence" class="confidence-section relative bg-[#F7F7F5] py-16 sm:py-20 lg:py-24">
+        <!-- <section id="confidence" class="confidence-section relative bg-[#F7F7F5] py-16 sm:py-20 lg:py-24">
             <div class="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
 
-                <!-- Header -->
+              
                 <div class="confidence-copy max-w-[720px]">
                     <div class="flex items-center gap-3">
                         <span class="w-8 h-[2px] bg-brandRed rounded-full"></span>
@@ -3374,7 +3266,7 @@
                     </p>
                 </div>
 
-                <!-- Trust Bar -->
+        
                 <div class="confidence-trust mt-10 lg:mt-12 rounded-2xl lg:rounded-3xl bg-white border border-luxuryBorder/70 shadow-sm shadow-slate-900/5 px-4 py-6 sm:px-6 sm:py-7 lg:px-8">
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 lg:gap-0 lg:divide-x divide-luxuryBorder">
                         <div class="confidence-trust-item flex flex-col items-center text-center px-2 lg:px-4">
@@ -3440,10 +3332,10 @@
                     </div>
                 </div>
 
-                <!-- Progress + FAQ -->
+             
                 <div class="mt-8 lg:mt-10 grid lg:grid-cols-2 gap-6 lg:gap-8 items-stretch">
 
-                    <!-- Why This Project -->
+                
                     <article class="confidence-progress flex flex-col rounded-2xl lg:rounded-3xl bg-white shadow-lg shadow-slate-900/6 border border-luxuryBorder/50 overflow-hidden">
                         <div class="relative lg:aspect-[16/7] aspect-[16/9]">
                             <img
@@ -3515,7 +3407,7 @@
                         </div>
                     </article>
 
-                    <!-- FAQ Accordion -->
+
                     <div class="confidence-faq rounded-2xl lg:rounded-3xl bg-white shadow-lg shadow-slate-900/6 border border-luxuryBorder/50 p-4 sm:p-5 lg:p-6">
                         <div class="faq-list space-y-3" id="confidenceFaq">
 
@@ -3613,7 +3505,7 @@
                     </div>
                 </div>
 
-                <!-- CTA Bar -->
+              
                 <div class="confidence-cta mt-8 lg:mt-10 rounded-2xl lg:rounded-3xl bg-brandRed/[0.06] border border-brandRed/10 px-5 py-6 sm:px-7 sm:py-7 lg:px-8">
                     <div class="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-8">
                         <div class="flex items-start sm:items-center gap-4 flex-1">
@@ -3658,7 +3550,7 @@
                 </div>
 
             </div>
-        </section>
+        </section> -->
 
         <!-- =========================
         SECTION 7 / BOOK SITE VISIT
@@ -3757,39 +3649,39 @@
                         <!-- Right form -->
                         <div class="sitevisit-form relative z-30 flex justify-center lg:justify-end">
                             <div class="w-full max-w-[420px] rounded-[22px] bg-white p-6 sm:p-8 shadow-2xl shadow-slate-900/20 overflow-visible">
-                                <div class="mb-5">
-                                    <span class="lm-eyebrow">Priority Assistance</span>
-                                    <h3 class="lm-title font-playfair">Book a site visit</h3>
-                                    <p class="lm-subtitle">Share your details to receive the latest price sheet, floor plans and availability.</p>
+                                <div class="hero-lead-heading">
+                                    <h3 class="font-playfair">Get Price &amp; Availability</h3>
+                                    <span aria-hidden="true"></span>
+                                    <p>Fill in your details and our property expert will contact you shortly.</p>
                                 </div>
 
-                                <form class="lm-form relative" id="siteVisitForm">
-                                    <div class="lm-group">
-                                        <label for="siteVisitName" class="lm-label">Full name</label>
-                                        <input id="siteVisitName" class="lm-input" type="text" name="name" placeholder="Enter your name" required autocomplete="name">
+                                <form class="hero-lead-form" id="siteVisitForm">
+                                    <div class="form-field hero-form-field">
+                                        <label class="sr-only" for="siteVisitName">Your name</label>
+                                        <i class="fa-regular fa-user" aria-hidden="true"></i>
+                                        <input id="siteVisitName" type="text" name="name" placeholder="Your Name" required autocomplete="name">
                                     </div>
-                                    <div class="lm-group">
-                                        <label for="siteVisitPhone" class="lm-label">Mobile number</label>
-                                        <div class="lm-input lm-phone">
-                                            <span class="lm-phone-prefix" aria-hidden="true">
-                                                <span class="lm-flag"></span>
-                                                <span class="lm-code">+91</span>
-                                            </span>
-                                            <input id="siteVisitPhone" type="tel" name="phone" placeholder="Enter mobile number" required inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" autocomplete="tel-national">
-                                        </div>
+                                    <div class="form-field hero-form-field">
+                                        <label class="sr-only" for="siteVisitPhone">Mobile number</label>
+                                        <i class="fa-solid fa-phone" aria-hidden="true"></i>
+                                        <input id="siteVisitPhone" type="tel" name="phone" placeholder="Mobile Number" required inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" autocomplete="tel-national">
                                     </div>
-                                    <div class="lm-group">
-                                        <label for="siteVisitEmail" class="lm-label">Email address</label>
-                                        <input id="siteVisitEmail" class="lm-input" type="email" name="email" placeholder="you@example.com" autocomplete="email">
+                                    <div class="form-field hero-form-field">
+                                        <label class="sr-only" for="siteVisitUnit">Select unit type</label>
+                                        <i class="fa-solid fa-house" aria-hidden="true"></i>
+                                        <select id="siteVisitUnit" name="unit" required>
+                                            <option value="">Select Unit Type</option>
+                                            <option value="2 BHK">2 BHK</option>
+                                            <option value="3 BHK">3 BHK</option>
+                                            <option value="4 BHK Duplex">4 BHK Duplex</option>
+                                        </select>
                                     </div>
-                                    <label class="lm-consent" for="siteVisitConsent">
+                                    <label class="lm-consent hero-lead-consent" for="siteVisitConsent">
                                         <input id="siteVisitConsent" type="checkbox" name="consent" value="yes" required>
-                                        <span>
-                                            I agree to receive project information by phone, SMS, email or WhatsApp, including if my number is registered under DND. I have read the
-                                            <a href="#" class="lm-link">Privacy Policy</a>.
-                                        </span>
+                                        <span>I agree to be contacted about this enquiry.</span>
                                     </label>
-                                    <button type="submit" class="lm-submit">Request a Callback</button>
+                                    <button type="submit" class="hero-lead-submit">Get Price &amp; Availability</button>
+                                    <p class="hero-lead-note"><i class="fa-solid fa-lock" aria-hidden="true"></i>Your information is safe with us.</p>
                                 </form>
                             </div>
                         </div>
@@ -3942,57 +3834,46 @@
                 </svg>
             </button>
 
-            <div class="mb-5 pr-10">
-                <span class="lm-eyebrow">Project Enquiry</span>
-                <h2 id="leadModalTitle" class="lm-title font-playfair">
-                    Receive complete details
-                </h2>
-                <p id="leadModalSubtitle" class="lm-subtitle">
-                    Get the latest price sheet, floor plans, payment information and site-visit support.
-                </p>
+            <div class="hero-lead-heading pr-8">
+                <h2 id="leadModalTitle" class="font-playfair">Get Price &amp; Availability</h2>
+                <span aria-hidden="true"></span>
+                <p id="leadModalSubtitle">Fill in your details and our property expert will contact you shortly.</p>
             </div>
 
-            <form class="lm-form relative" id="leadModalForm">
+            <form class="hero-lead-form" id="leadModalForm">
                 <input type="hidden" name="intent" id="leadModalIntent" value="Download Brochure">
 
-                <div class="lm-group">
-                    <label for="lmName" class="lm-label">Full name</label>
-                    <input id="lmName" class="lm-input" type="text" name="name" placeholder="Enter your name" required autocomplete="name">
+                <div class="form-field hero-form-field">
+                    <label class="sr-only" for="lmName">Your name</label>
+                    <i class="fa-regular fa-user" aria-hidden="true"></i>
+                    <input id="lmName" type="text" name="name" placeholder="Your Name" required autocomplete="name">
                 </div>
 
-                <div class="lm-group">
-                    <label for="lmPhone" class="lm-label">Mobile number</label>
-                    <div class="lm-input lm-phone">
-                        <span class="lm-phone-prefix" aria-hidden="true">
-                            <span class="lm-flag"></span>
-                            <i class="fa-solid fa-caret-down text-[10px] text-luxuryGray"></i>
-                            <span class="lm-code">+91</span>
-                        </span>
-                        <input id="lmPhone" type="tel" name="phone" placeholder="Enter mobile number" required inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" autocomplete="tel-national">
-                    </div>
+                <div class="form-field hero-form-field">
+                    <label class="sr-only" for="lmPhone">Mobile number</label>
+                    <i class="fa-solid fa-phone" aria-hidden="true"></i>
+                    <input id="lmPhone" type="tel" name="phone" placeholder="Mobile Number" required inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" autocomplete="tel-national">
                 </div>
 
-                <div class="lm-group">
-                    <label for="lmEmail" class="lm-label">Email address</label>
-                    <input id="lmEmail" class="lm-input" type="email" name="email" placeholder="you@example.com" autocomplete="email">
+                <div class="form-field hero-form-field">
+                    <label class="sr-only" for="lmUnit">Select unit type</label>
+                    <i class="fa-solid fa-house" aria-hidden="true"></i>
+                    <select id="lmUnit" name="unit" required>
+                        <option value="">Select Unit Type</option>
+                        <option value="2 BHK">2 BHK</option>
+                        <option value="3 BHK">3 BHK</option>
+                        <option value="4 BHK Duplex">4 BHK Duplex</option>
+                    </select>
                 </div>
 
-                <label class="lm-consent" for="lmConsent">
+                <label class="lm-consent hero-lead-consent" for="lmConsent">
                     <input id="lmConsent" type="checkbox" name="consent" value="yes" required>
-                    <span>
-                        I agree to receive project information by phone, SMS, email or WhatsApp, including if my number is registered under DND. I have read the
-                        <a href="#" class="lm-link">Privacy Policy</a>.
-                    </span>
+                    <span>I agree to be contacted about this enquiry.</span>
                 </label>
 
-                <button type="submit" id="leadModalSubmit" class="lm-submit">
-                    Send Project Details
-                </button>
+                <button type="submit" id="leadModalSubmit" class="hero-lead-submit">Get Price &amp; Availability</button>
 
-                <p class="lm-note">
-                    <i class="fa-solid fa-lock text-[#C9A227] text-[11px]"></i>
-                    No spam. Your information stays private.
-                </p>
+                <p class="hero-lead-note"><i class="fa-solid fa-lock" aria-hidden="true"></i>Your information is safe with us.</p>
             </form>
         </div>
     </div>
